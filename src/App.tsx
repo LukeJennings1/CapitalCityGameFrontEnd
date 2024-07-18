@@ -3,14 +3,15 @@ import './App.css';
 import FetchCountries from './fetchCountries';
 
 function App() {
-
   type CountryData = {
     data: {
       name: string;
       capital: string;
     }[];
   };
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [countryData, setCountryData] = useState<CountryData | null>(null);
   const [correctAnswer, setCorrectAnswer] = useState<{ name: string; capital: string; } | null>(null);
   const [isCorrect, setIsCorrect] = useState<{ [key: number]: boolean | null }>({});
@@ -28,6 +29,7 @@ function App() {
       .catch((error) => {
         console.error('Error fetching data:', error);
         setIsLoading(false);
+        setError("Error loading cards - please refresh the page");
       });
   }, []);
 
@@ -41,11 +43,11 @@ function App() {
     if (!countryData || countryData.length < 3) {
       throw new Error('Array must have at least 3 elements');
     }
-  
+
     const pickedElements: T[] = [];
     let pickedAnswer: T | null = null;
     const dataArray = [...countryData];
-  
+
     while (pickedElements.length < 3) {
       const randomIndex = Math.floor(Math.random() * dataArray.length);
       const pickedElement = dataArray[randomIndex];
@@ -55,7 +57,7 @@ function App() {
       }
       dataArray.splice(randomIndex, 1);
     }
-  
+
     setQuestionSet({
       countries: pickedElements,
       answer: pickedAnswer!,
@@ -65,7 +67,7 @@ function App() {
     setIsCorrect({});
     setTitle("Pick the correct capital city of");
   }
-  
+
   function handleCardClick(selectedIndex: number, selectedAnswer: string) {
     if (correctAnswer) {
       const correct = selectedAnswer === correctAnswer.capital;
@@ -76,7 +78,7 @@ function App() {
       setTitle(correct ? "Correct! Click reset to play again!" : "Incorrect! Click reset to play again!");
     }
   }
-  
+
   function resetGame() {
     if (countryData) {
       pickQuestionSet(countryData.data);
@@ -88,6 +90,10 @@ function App() {
       {isLoading ? (
         <div className="loading-icon">
           Loading...
+        </div>
+      ) : error ? (
+        <div className="error-message">
+          {error}
         </div>
       ) : (
         <>
